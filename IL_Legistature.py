@@ -62,6 +62,8 @@ for link in senator_links:
 def senator_scrape(link):
 
     # visit the first senator page
+    executable_path = {'executable_path': 'chromedriver.exe'}
+    browser = Browser('chrome', **executable_path, headless=False)
     browser.visit(link)
     html = browser.html
     senator_soup = BeautifulSoup(html, 'html.parser')
@@ -82,68 +84,71 @@ def senator_scrape(link):
 
     # Get the leadership position
     senator_position_all = senator_soup.find_all('span', {'class':'heading2'})
-    senator_position = senator_position[3].text
+    senator_position = senator_position_all[3].text
 
 
     # Most of the sentor info are in tables, so can gather the address and committee assignments from td in the "member" class
     senator_info_list = senator_soup.find_all('td', {'class': 'member'})
 
 
-    # In[71]:
-
-
     # Springfield office information
-
     senator_springfield_address_line1 = senator_info_list[1].text
-    # senator_springfield_address_line1
     senator_springfield_address_line2 = senator_info_list[2].text
     senator_springfield_address_line3 = senator_info_list[3].text
 
     senator_springfield_phone_number = senator_info_list[4].text
 
 
-    # In[73]:
-
-
     #  District office information
-
     senator_district_address_line1 = senator_info_list[8].text
-
     senator_district_address_line2 = senator_info_list[9].text
     senator_district_address_line3 = senator_info_list[10].text
 
     senator_district_phone_number = senator_info_list[11].text
 
-    # senator_district_address_line1
-
-
-    # In[77]:
-
-
+  
     # Senator info: The # of years served, committee assignments, and biographhy are all under the same child tag
-
     senator_bio_info  = senator_info_list[12].text
-    senator_bio_info
 
+    assoc_reps_tag = senator_soup.find_all('a', {'class': 'notranslate'})
 
-    # In[87]:
-
-
-    ass_reps_tag = senator_soup.find_all('a', {'class': 'notranslate'})
-    ass_reps_tag
-
-
-    # In[92]:
 
 
     current_senator_assoc_reps = []
-    for tag in ass_reps_tag:
+    for tag in assoc_reps_tag:
         rep = tag.text
         current_senator_assoc_reps.append(rep)
-    #     print(rep)
-    # current_senator_assoc_reps
 
 
+    all_senator_details = {
+        'name': senator_name,
+        'district': senator_district,
+        'picture': senator_img,
+        'role': senator_position,
 
+        'spg_address_line1': senator_springfield_address_line1,
+        'spg_address_line2': senator_springfield_address_line2,
+        'spg_address_line3': senator_springfield_address_line3,
+        'spg_phone_number': senator_springfield_phone_number,
 
+        'dst_address_line1': senator_district_address_line1,
+        'dst_address_line2': senator_district_address_line2,
+        'dst_address_line3': senator_district_address_line3,
+        'dst_phne_number' : senator_district_phone_number,
 
+        'associate_reps' : current_senator_assoc_reps
+
+    }
+
+    # close the windo
+    browser.quit()
+
+    return all_senator_details
+
+senator_information = {}
+# senator_number = 0
+
+for link in senator_link_list:
+    senator_scrape(link)
+    senator_information[all_senator_details['name']] = all_senator_details
+    # senator_number = senator_number + 1
